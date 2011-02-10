@@ -25,7 +25,7 @@
 **/
 ImageShackError::UploadError ImageShackError::getErrorCode(QNetworkReply::NetworkError errorCode)
 {
-	UploadError code;
+	UploadError code = NoError;
 
 	switch(errorCode)
 	{

@@ -134,6 +134,15 @@ void ImageShackObject::setTags(QString tags)
 }
 
 /**
+*	Setter of tags attribute
+*
+**/
+void ImageShackObject::setTags(QStringList tags)
+{
+    this->tags = tags.join(",");
+}
+
+/**
 *	Setter of resizeOption attribute
 *
 **/

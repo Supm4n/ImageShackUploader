@@ -142,6 +142,12 @@ class ImageShackObject : public QObject
             void setTags(QString tags);
 
             /**
+            *	Setter of tags attribute
+            *
+            **/
+            void setTags(QStringList tags);
+
+            /**
             *	Setter of resizeOption attribute
             *
             **/

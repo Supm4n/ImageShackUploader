@@ -1,21 +1,21 @@
 /*********************************************************************
-*	Thumbnail me 3.0
+*	@brief ImageShack Qt lib	
 *
-*	Thumbnail me is a user interface for Movie thumbnailer. 
-* 	Generate thumbnails from any movie is now easier !
+* 	An open source Qt lib to upload photo and videos to ImageShack.
+*	This lib was first created to be plugged on Thumbnail me projet,	
+* 	a software generating thumbnails from many types of movies.
 *	
-*	@package	Thumbnail me 3.0	
-*	@author		Christ Azika-Eros <christ@azika-eros.org>
-*	@copyright	Quentin Rousseau (c) 2010 2009, Quentin Rousseau
+*	@package	ImageShackUploader	
+*	@copyright	Christ "Supm4n" Azika-Eros <christ@azika-eros.org>	
 *	@license	Creative Commons GNU GPL
 *				http://creativecommons.org/licenses/GPL/2.0/ 
-*	@link 		http://thumbnailme.sourceforge.net/
-*	@version	3.0
+*	@link 		http://github.com/Supm4n/ImageShackUploader.git
+*	@see		http://thumbnailme.com
+*	@version	0.1
 *
-*	@filesource	ImageShackUploader.hpp
 *	@role	 	The header of the ImageShackUploader class. 
-*				This class creates the object which will upload
-*				photos to ImageShack.
+*				This class interacts with the application and uploads
+*				photos and videos to ImageShack web site
 *
 *********************************************************************/
 #ifndef  HEADER_IMAGESHACKUPLOADER
@@ -42,110 +42,132 @@
 #include "ImageShackResponse.hpp"
 
 /**
-* 	ImageShackUploader Class	
-*	
-*	@author Christ Azika-Eros <christ@azika-eros.org>
-**/
+ * @brief ImageShackUploader
+ */
 class ImageShackUploader : public QObject
 {
 	Q_OBJECT
 
-
-    //public  : // variables, enums
-
-
     public  : // Public methods
 
 			/**
-			*	Constructor
-			*
-			*	QString developerKey		the developer key received 
-			*		      			    	to use APIs
-			*	@param  QWidget * parent	the parent Widget
-			*	@access public
-			**/
-            ImageShackUploader(QString         developerKey =  ""  ,
-                               QString         userName     =  ""  ,
-                               QString         userPassword =  ""  ,
+			 * @brief constructor of ImageShackUploader class
+			 *
+			 * @param developerKey	the developer key received by ImageShack to
+			 * 						use  their APIs (optional)
+			 * @param userName		the user name (optional)
+			 * @param userPassword	the user password (optional)
+			 * @param proxy			the proxy to use (optional) 
+			 */
+            ImageShackUploader(QString         developerKey =  ""   ,
+                               QString         userName     =  ""   , 
+                               QString         userPassword =  ""   ,
                                QNetworkProxy * proxy		= NULL );
 
 			/**
-			*	Destructor
-			*
-			*	@access	public
-			**/
+			 * @brief destructor of ImageShackUploader class 
+			 */
             ~ImageShackUploader(void);
 
-            /**
-            *	Upload a list of images
-            *
-            *	QList<ImageShackObject> images	     images to upload
-            *   QString                 userName     the user name
-            *	QString				    userPassword the user password
-            *
-            *	@access public
-            */
-            void uploadImages(QList<ImageShackObject *> images        ,
-                             QString                userName = ""     ,
-                             QString 			    userPassword = "");
+			/**
+			 * @brief public method uploading a list of images
+			 *
+			 * If uploads are in progress, the signal uploadAlreadyStarted
+			 * if emitted
+			 *
+			 * @see   signal uploadAlreadyStarted()
+			 * @see   signal authentificationResponse()
+			 * @see	  signal uploadError(ImageShackError::UploadError)
+			 * @see   signal uploadInProgress(ImageShackObject    ,
+			 * 								  qint64 bytesreceived,
+			 * 								  qint64 bytesTotal   )
+			 * @see	  signal uploadDone(ImageShackResponse) 
+			 * @see	  signal endOfUploads()
+			 * @see   signal authentificationRequired(QNetworkReply ,
+			 * 										  QAuthenticator)
+			 * @see	  signal proxyAuthentificationRequired(QNetworkProxy   ,
+			 * 											   QAuthentificator)
+			 *
+			 * @param images		image's list to upload 
+			 * @param userName		the user name (optional)
+			 * @param userPassword	the user password (optional)
+			 */
+            void uploadImages(QList<ImageShackObject *> images            , 
+                              QString                 	userName     = "" ,
+                              QString 			    	userPassword = "");
 
-            /**
-            *	set proxy variable to NULL in order to not
-            *	use any proxy when uploading
-            *
-			*	@access public	
-			*/
+			/**
+			 * @brief disable the use of the proxy
+			 *
+			 * set proxy attribut to NULL. No proxy will be 
+			 * used when uploading files
+			 */
             void noProxy();
 
-            /**
-            *	check wether the user password is correct
-            *
-            *	@return bool true if the password is correct, false if
-            *				 not
-            */
+			/**
+			 * @brief check the user's login and password
+			 *
+			 * @see   signal authentificationResponse()
+
+			 * @param userName     the user name 
+			 * @param userPassword the user password
+			 */
             void checkUserPassword(QString	userName     ,
                                    QString   userPassword);
 
     signals : // Signals
 
-            /**
-			*	Send the result of the upload	
-            *
-            *	@param  QString fileUploaded	the file uploaded
-			*	@param	QHash<QString, QString> informations concerning	
-			*								    the uploads
-			*	@access	public	
-			*/
+			/**
+			 * @brief this signal is emitted when each image/video is uploaded
+			 *
+			 * return the results of the upload 
+
+			 * @see class ImageShackResponse::getImageShackResponse()
+			 *
+			 * @param uploadResponse the results of the upload
+			 */
             void uploadDone(ImageShackResponse * uploadResponse);
 
 
+			/**
+			 * @brief this signal notifies the end of uploads
+			 *
+			 * it is emitted when the upload of a list of image/video
+			 * submitted is finished
+			 */
             void endOfUploads();
 
+			/**
+			 * @brief this signal is emitted when uploads have already started
+			 **/
             void uploadAlreadyStarted();
 
-            /**
-            *	Send the progression of the upload
-            *
-            *	@param QString fileUploaded the file uploaded
-            *	@param qint64 bytesReceived	bytes received
-            *	@param qint64 bytesTotal	total bytes to send
-            *
-            *	@access public
-            **/
-            void uploadProgress(ImageShackObject * fileUploaded, qint64 bytesReceived, qint64 bytesTotal);
+			/**
+			 * @brief this signal notifies uploads' progress
+			 *
+			 * @param fileUploaded	the being uploaded
+			 * @param bytesReceived number of bytes sent
+			 * @param bytesTotal 	total bytes to send
+			 */
+            void uploadProgress(ImageShackObject * fileUploaded,
+								qint64 bytesReceived		   , 
+								qint64 bytesTotal			  );
 
-            /**
-            *	Send the upload error
-            *
-            *	@param UploadError error the error
-            **/
+			/**
+			 * @brief this signal is emitted when an error occured
+			 * 		  during uploads
+			 *
+			 * @see ImageShackError::UploadError
+			 *
+			 * @param error	the error type
+			 */
             void uploadError(ImageShackError::UploadError error);
 
             /**
             *	@see QNetworkAccessManager signal
             *
             **/
-            void authentificationRequired(QNetworkReply  * reply,
+            void authentificationRequired(QNetworkReply  * reply		   ,
                                           QAuthenticator * authentificator);
 
             /**
@@ -257,15 +279,15 @@ class ImageShackUploader : public QObject
             **/
 			void imageUploaded();
 
-            /**
-            *	Manage image uploads
-            *
-            *	@param  QString fileUploaded	the file uploaded
-            *	@param	QHash<QString, QString> informations concerning
-            *								    the uploads
-            *	@access	private
-            */
-            void manageMultiUploads(ImageShackResponse * uploadResponse);
+			/**
+			*	Manage image uploads
+			*
+			*	@param  QString fileUploaded	the file uploaded
+			*	@param	QHash<QString, QString> informations concerning
+			*								    the uploads
+			*	@access	private
+			*/
+			void manageMultiUploads(ImageShackResponse * uploadResponse);
 
             /**
             *	manage authentification requirements
@@ -314,9 +336,7 @@ class ImageShackUploader : public QObject
             *	@param	QString password	    the user password
             *	@access	private
             */
-            void uploadOneImage(ImageShackObject *   image        , 
-                                QString	userName     = ""         ,
-                                QString userPassword = ""        );
+            void uploadOneImage(ImageShackObject *   image);
 
             /**
 			*	Upload an image. This method is called by 
@@ -341,17 +361,6 @@ class ImageShackUploader : public QObject
             *	@access private
             */
             QHash<QString, QStringList> mimeTypeList();
-
-
-            /**
-            *	Manage image uploads
-            *
-            *	@param  QString fileUploaded	the file uploaded
-            *	@param	QHash<QString, QString> informations concerning
-            *								    the uploads
-            *	@access	private
-            */
-            void manageMultiUplaods(ImageShackResponse * uploadResponse);
 
 	public  : // Setters and Getters
 

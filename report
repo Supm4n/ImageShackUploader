@@ -1,0 +1,13 @@
+Code's documentation started. ImageShackObject completed.
+Bug concerning image resizing fixed.
+
+* Fixed
+	- Images can be resize now (optimage header was forgotten)
+	- the user and password are no longer overwritten when a second
+	  list of objects is submitted
+* Done
+	- The documentation of the code is started in ImageShackUploader.hpp
+* To do
+	- upload processes should be in a thread as any application using the 
+	  current version is freezed.
+	  

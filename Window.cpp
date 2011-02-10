@@ -42,6 +42,9 @@ Window::Window()
     ImageShackObject * basket = new ImageShackObject("/home/christ/Images/Basket/basket.jpg","basket,fire,pub",true);
     ImageShackObject * dunk   = new ImageShackObject("/home/christ/Images/Basket/dunk.jpg","dunk,nba,priv",false);
 
+	basket->setResizeOption("200x200");
+	dunk->setResizeOption("50x300");
+
     listeImages << basket;
     listeImages << dunk;
 

@@ -113,12 +113,16 @@ void ImageShackUploader::manageAuthentificationResponse()
 */
 void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
                                       QString                userName    ,
-                                      QString 			    userPassword )
+                                      QString 			     userPassword)
 {
     if(this->uploadStarted == false) // if a previons mutli-upload is not finished
     {
-        this->userName		   = userName;
-        this->userPassword     = userPassword;
+		if(userName != "")
+			this->userName		   = userName;
+
+		if(userPassword != "")
+			this->userPassword     = userPassword;
+
         this->filesToUpload    = images;
         this->nbFilesToUploads = images.size();
         this->nbFilesUploaded  = 0;
@@ -139,7 +143,7 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
             //               image->getResizeOption(),
             //               userName, userPassword );
 
-            uploadOneImage(image, userName, userPassword );
+            uploadOneImage(image);
 
             filesToUpload.removeFirst();
 
@@ -165,24 +169,23 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
 *	@param	QString password	    the user password
 *	@access	private
 */
-void ImageShackUploader::uploadOneImage(ImageShackObject *  image        ,
-										QString	            userName     ,
-                                        QString             userPassword )
+void ImageShackUploader::uploadOneImage(ImageShackObject *  image)
 {
     QHash<QString, QString> headers;
 
     //headers["fileupload"] = imageInfos.fileName();
     headers["optsize"]	  = image->getResizeOption();
+	headers["optimage"]   = (image->getResizeOption() == "") ? QString("0") : QString("1");
     headers["tags"]		  = image->getTags();
     headers["rembar"]	  = (this->removeInformationBar == true) ? QString("yes") : QString("no");
     headers["public"]	  = (image->isPublic()) ? QString("yes") : QString("no");
     headers["key"]		  = this->developerKey;
     headers["xml"]		  = QString("yes");
 
-    if(userName != "" )
+    if(this->userName != "" )
     {
-        headers["a_username"] = userName;
-        headers["a_password"] = userPassword;
+        headers["a_username"] = this->userName;
+        headers["a_password"] = this->userPassword;
     }
 
     sendImage(image,headers);
@@ -318,9 +321,7 @@ void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
 
         qDebug() << " - Fichier a uploader = " << file->getObjectPath();
 
-        uploadOneImage(file               ,
-                       this->userName	  ,
-                       this->userPassword);
+        uploadOneImage(file);
 
         filesToUpload.removeFirst();
 
@@ -365,10 +366,10 @@ void ImageShackUploader::imageUploaded()
 
     usableResponse = ImageShackResponse::makeResponseUsable(response);
 
-
 	if(usableResponse.contains(QString("error")))
 	{
 		//qDebug() << "error resolution tag";
+		this->uploadStarted	   = false;
 		emit uploadError(ImageShackError::UnKnownError);
 	}
 	else
