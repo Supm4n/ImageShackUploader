@@ -8,7 +8,7 @@
 *	@author		Christ Azika-Eros <christ@azika-eros.org>
 *	@copyright	Quentin Rousseau (c) 2010 2009, Quentin Rousseau
 *	@license	Creative Commons GNU GPL
-*				http://creativecommons.org/licenses/GPL/2.0/ 
+*			http://creativecommons.org/licenses/GPL/2.0/
 *	@link 		http://thumbnailme.sourceforge.net/
 *	@version	3.0
 *
@@ -26,7 +26,7 @@
 *	QString developerKey		the developer key received 
 *		      			    	to use APIs
 *	QString userName			the user name
-*   QString userPassword		the user password
+*       QString userPassword		the user password
 *	QNetworkProxy * prosy	 	the proxy
 **/
 ImageShackUploader::ImageShackUploader(QString         developerKey ,
@@ -35,8 +35,8 @@ ImageShackUploader::ImageShackUploader(QString         developerKey ,
                                        QNetworkProxy * proxy	    )
 {
     this->developerKey         = developerKey;
-    this->userName			   = userName;
-    this->userPassword  	   = userPassword;
+    this->userName	       = userName;
+    this->userPassword         = userPassword;
     this->proxy				   = proxy;
     this->imageUploadUrl       = "http://www.imageshack.us/upload_api.php" ;
 	this->removeInformationBar = true;
@@ -93,10 +93,10 @@ void ImageShackUploader::checkUserPassword(QString	userName    ,
 **/
 void ImageShackUploader::manageAuthentificationResponse()
 {
-    QNetworkReply * httpReply = qobject_cast<QNetworkReply*>(sender());
+    //QNetworkReply * httpReply = qobject_cast<QNetworkReply*>(sender());
     QByteArray response;
 
-    response = httpReply->readAll();
+    response = networkReply->readAll();
 
     if(response == QByteArray("OK"))
         emit authentificationResponse(true);
@@ -161,11 +161,11 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
 /**
 *	Upload an image to an account
 *
-*	@param	QString imagePath	    the image path
+*	@param	QString imagePath	the image path
 *	@param	QString tags	        image tags
 *	@param	QString resizeOption	the resize option,
-*									default value is resample
-*	@param	QString user		    the user ident
+*					default value is resample
+*	@param	QString user		the user ident
 *	@param	QString password	    the user password
 *	@access	private
 */
@@ -175,12 +175,12 @@ void ImageShackUploader::uploadOneImage(ImageShackObject *  image)
 
     //headers["fileupload"] = imageInfos.fileName();
     headers["optsize"]	  = image->getResizeOption();
-	headers["optimage"]   = (image->getResizeOption() == "") ? QString("0") : QString("1");
-    headers["tags"]		  = image->getTags();
+    headers["optimage"]   = (image->getResizeOption() == "") ? QString("0") : QString("1");
+    headers["tags"]       = image->getTags();
     headers["rembar"]	  = (this->removeInformationBar == true) ? QString("yes") : QString("no");
     headers["public"]	  = (image->isPublic()) ? QString("yes") : QString("no");
-    headers["key"]		  = this->developerKey;
-    headers["xml"]		  = QString("yes");
+    headers["key"]        = this->developerKey;
+    headers["xml"]	      = QString("yes");
 
     if(this->userName != "" )
     {
@@ -214,13 +214,16 @@ void ImageShackUploader::sendImage(ImageShackObject * imageToUpload ,
 	QByteArray data;
 
 	if(!image.open(QIODevice::ReadOnly))
+	{
 		emit uploadError(ImageShackError::FailedOpeningTheFile);
+		this->abortUploads();
+		return;
+	}
 
 	// build of the header
     data.append("--" + boundary + cr);
     data.append("Content-Disposition: form-data; ");
     data.append( "name=\"fileupload\"; filename=\"" + imageInfos.absoluteFilePath() + "\";" + cr);
-    //data.append("Content-Type: image/jpeg" + cr + cr);
     data.append("Content-Type: " + this->mimeType(imagePath) + cr + cr);
 
 	// insertion of the image
@@ -250,53 +253,25 @@ void ImageShackUploader::sendImage(ImageShackObject * imageToUpload ,
 		manager->setProxy(*this->proxy);
 
     this->fileBeingUploaded = imageToUpload;
-    //this->fileBeingUploaded = new ImageShackObject(imagePath          ,
-    //                                               headers["tags"]    ,
-	//											   
-    //                                               headers["optsize"]);
 
     this->uploadStarted	   = true;
 
-    response = manager->post(request, data);
+    networkReply = manager->post(request, data);
 
-	connect(response, SIGNAL(finished())      ,
-			this    , SLOT  (imageUploaded()));
+	connect(networkReply, SIGNAL(finished())      ,
+			this        , SLOT  (imageUploaded()));
 
-	connect(response, SIGNAL(error(QNetworkReply::NetworkError))       ,
-            this    , SLOT  (manageUploadError(QNetworkReply::NetworkError)));
+	connect(networkReply, SIGNAL(error(QNetworkReply::NetworkError))       ,
+            this        , SLOT  (manageUploadError(QNetworkReply::NetworkError)));
 
-    connect(response, SIGNAL(uploadProgress(qint64,qint64)),
-            this	, SLOT  (manageUploadProgress(qint64,qint64)));
+    connect(networkReply, SIGNAL(uploadProgress(qint64,qint64)),
+            this	    , SLOT  (manageUploadProgress(qint64,qint64)));
 
     connect(manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
             this   , SLOT  (manageAuthentificationRequired(QNetworkReply*,QAuthenticator*)));
 
     connect(manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
             this   , SLOT  (manageProxyAuthentificationRequired(QNetworkProxy,QAuthenticator*)));
-}
-
-/**
-*	Return the mimetype basing on the file extension
-*	By default, the mimetype returns is image/jpeg
-*
-*	@return QString the mimetype
-*	@access private
-*/
-QString ImageShackUploader::mimeType(QString imagePath)
-{
-    QFileInfo imageInfos(imagePath);
-
-    QHashIterator<QString, QStringList> h(this->mimeTypeList());
-
-    while (h.hasNext())
-    {
-        h.next();
-
-        if(h.value().contains(imageInfos.suffix()))
-            return h.key();
-    }
-
-    return QString("image/jpeg");
 }
 
 /**
@@ -311,10 +286,8 @@ void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
 {
     qDebug() << " -- ManageImageUploads";
     qDebug() << " -  nombre fichiers restant = " << filesToUpload.size();
-    //qDebug() << "- File to upload = " + filesToUpload.first()->getObjectPath();
-    //qDebug() << " - Number of files to uploads : " << filesToUpload.size();
 
-    if(this->filesToUpload.size() > 0)
+    if(this->filesToUpload.size() > 0 && this->uploadStarted)
     {
         //ImageShackObject * file = filesToUpload.takeFirst();
         ImageShackObject * file = (ImageShackObject *) filesToUpload.first();
@@ -327,6 +300,51 @@ void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
 
         qDebug() << " - Nombre fichiers restant = " << filesToUpload.size();
     }
+}
+
+/**
+*	Manage replies after the image is uploaded
+*
+*	@access private	
+*/
+void ImageShackUploader::imageUploaded()
+{
+    QHash<QString, QString> usableResponse;
+
+    usableResponse = ImageShackResponse::makeResponseUsable(networkReply);
+
+	if(usableResponse.contains(QString("error")))
+	{
+		//qDebug() << "error resolution tag";
+		//this->uploadStarted	   = false;
+		emit uploadError(ImageShackError::UnKnownError);
+		this->abortUploads();
+	}
+	else
+	{
+		qDebug() << "Une image est uploade : \n " << usableResponse;
+
+		emit uploadDone(new ImageShackResponse(this->fileBeingUploaded,usableResponse));
+		this->nbFilesUploaded ++;
+
+		qDebug() << filesToUpload.size();
+
+		if(nbFilesUploaded == nbFilesToUploads)
+		{
+			this->uploadStarted	   = false;
+			emit endOfUploads();
+		}
+	}
+
+}
+
+/**
+ * @brief Abort uploads 
+ */
+void ImageShackUploader::abortUploads()
+{
+	this->uploadStarted = false;
+	networkReply->abort();
 }
 
 /**
@@ -356,38 +374,27 @@ QHash<QString, QStringList> ImageShackUploader::mimeTypeList()
 }
 
 /**
-*	Manage replies after the image is uploaded
+*	Return the mimetype basing on the file extension
+*	By default, the mimetype returns is image/jpeg
 *
-*	@access private	
+*	@return QString the mimetype
+*	@access private
 */
-void ImageShackUploader::imageUploaded()
+QString ImageShackUploader::mimeType(QString imagePath)
 {
-    QHash<QString, QString> usableResponse;
+    QFileInfo imageInfos(imagePath);
 
-    usableResponse = ImageShackResponse::makeResponseUsable(response);
+    QHashIterator<QString, QStringList> h(this->mimeTypeList());
 
-	if(usableResponse.contains(QString("error")))
-	{
-		//qDebug() << "error resolution tag";
-		this->uploadStarted	   = false;
-		emit uploadError(ImageShackError::UnKnownError);
-	}
-	else
-	{
-		qDebug() << "Une image est uploade : \n " << usableResponse;
+    while (h.hasNext())
+    {
+        h.next();
 
-		emit uploadDone(new ImageShackResponse(this->fileBeingUploaded,usableResponse));
-		this->nbFilesUploaded ++;
+        if(h.value().contains(imageInfos.suffix()))
+            return h.key();
+    }
 
-		qDebug() << filesToUpload.size();
-
-		if(nbFilesUploaded == nbFilesToUploads)
-		{
-			this->uploadStarted	   = false;
-			emit endOfUploads();
-		}
-	}
-
+    return QString("image/jpeg");
 }
 
 /**
@@ -398,6 +405,7 @@ void ImageShackUploader::manageAuthentificationRequired(QNetworkReply  * reply,
                                                         QAuthenticator * authentificator)
 {
     emit authentificationRequired(reply,authentificator);
+	this->abortUploads();
 }
 
 /**
@@ -408,6 +416,7 @@ void ImageShackUploader::manageProxyAuthentificationRequired(const QNetworkProxy
                                                              QAuthenticator      * authenticator)
 {
     emit proxyAuthentificationRequired(proxy,authenticator);
+	this->abortUploads();
 }
 
 /**
@@ -419,8 +428,8 @@ void ImageShackUploader::manageUploadError(QNetworkReply::NetworkError errorCode
 {
     //qDebug() << "Error : " << errorCode;
 
-    this->uploadStarted	   = false;
 	emit uploadError(ImageShackError::getErrorCode(errorCode));
+	this->abortUploads();
 }
 
 /**

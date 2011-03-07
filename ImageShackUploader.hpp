@@ -1,22 +1,22 @@
 /*********************************************************************
 *	@brief ImageShack Qt lib	
 *
-* 	An open source Qt lib to upload photo and videos to ImageShack.
+* 	An open source Qt lib to upload photos and videos to ImageShack.
 *	This lib was first created to be plugged on Thumbnail me projet,	
 * 	a software generating thumbnails from many types of movies.
 *	
-*	@package	ImageShackUploader	
-*	@copyright	Christ "Supm4n" Azika-Eros <christ@azika-eros.org>	
-*	@license	Creative Commons GNU GPL
-*				http://creativecommons.org/licenses/GPL/2.0/ 
-*	@link 		http://github.com/Supm4n/ImageShackUploader.git
-*	@see		http://thumbnailme.com
-*	@version	0.1
-*
-*	@role	 	The header of the ImageShackUploader class. 
+*	@file		ImageShackUploader.hpp	
+*	@class		ImageShackUploader
+*		 		The header of the ImageShackUploader class. 
 *				This class interacts with the application and uploads
 *				photos and videos to ImageShack web site
 *
+*	@author		Christ "Supm4n" Azika-Eros <christ@azika-eros.org>	
+*	@note		Copyright (C) 2010-2011 Christ Azika-Eros
+*				License  : Creative Commons GNU GPL
+*						   http://creativecommons.org/licenses/GPL/2.0/ 
+*	 			Web site : http://github.com/Supm4n/ImageShackUploader.git
+*	@version	0.1
 *********************************************************************/
 #ifndef  HEADER_IMAGESHACKUPLOADER
 #define  HEADER_IMAGESHACKUPLOADER
@@ -54,10 +54,10 @@ class ImageShackUploader : public QObject
 			 * @brief constructor of ImageShackUploader class
 			 *
 			 * @param developerKey	the developer key received by ImageShack to
-			 * 						use  their APIs (optional)
+			 * 						use  their APIs (optional for the constructor)
 			 * @param userName		the user name (optional)
 			 * @param userPassword	the user password (optional)
-			 * @param proxy			the proxy to use (optional) 
+			 * @param proxy			the proxy settings to use (optional) 
 			 */
             ImageShackUploader(QString         developerKey =  ""   ,
                                QString         userName     =  ""   , 
@@ -73,7 +73,7 @@ class ImageShackUploader : public QObject
 			 * @brief public method uploading a list of images
 			 *
 			 * If uploads are in progress, the signal uploadAlreadyStarted
-			 * if emitted
+			 * is emitted
 			 *
 			 * @see   signal uploadAlreadyStarted()
 			 * @see   signal authentificationResponse()
@@ -84,13 +84,13 @@ class ImageShackUploader : public QObject
 			 * @see	  signal uploadDone(ImageShackResponse) 
 			 * @see	  signal endOfUploads()
 			 * @see   signal authentificationRequired(QNetworkReply ,
-			 * 										  QAuthenticator)
+			 * 					  					  QAuthenticator)
 			 * @see	  signal proxyAuthentificationRequired(QNetworkProxy   ,
-			 * 											   QAuthentificator)
+		 	 *                                             QAuthentificator)
 			 *
-			 * @param images		image's list to upload 
+			 * @param images		images' list to upload 
 			 * @param userName		the user name (optional)
-			 * @param userPassword	the user password (optional)
+			 * @param userPassword  the user password (optional)
 			 */
             void uploadImages(QList<ImageShackObject *> images            , 
                               QString                 	userName     = "" ,
@@ -122,7 +122,7 @@ class ImageShackUploader : public QObject
 			 *
 			 * return the results of the upload 
 
-			 * @see class ImageShackResponse::getImageShackResponse()
+			 * @see method ImageShackResponse::getImageShackResponse()
 			 *
 			 * @param uploadResponse the results of the upload
 			 */
@@ -182,6 +182,14 @@ class ImageShackUploader : public QObject
             *
             **/
             void authentificationResponse(bool response);
+	
+	public slots :
+
+			/**
+			 * @brief Aborts uploads
+			 */
+			void abortUploads();
+
 
 	private : // Private objects or variables
 
@@ -242,7 +250,7 @@ class ImageShackUploader : public QObject
 			*
 			*	@access private
 			**/	
-			QNetworkReply * response;	
+			QNetworkReply * networkReply;	
 
 			/**
 			*	QString developerKey	the developer key received 
