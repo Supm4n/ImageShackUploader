@@ -131,12 +131,12 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
         {
             this->uploadStarted = true;
 
-            qDebug() << " - Nombre de fichiers a uploader = " << this->filesToUpload.size();
+            //qDebug() << " - Nombre de fichiers a uploader = " << this->filesToUpload.size();
 
             //ImageShackObject * image = (ImageShackObject *) filesToUpload.takeFirst(); // return and remove the first image
             ImageShackObject * image = (ImageShackObject *) filesToUpload.first(); // return and remove the first image
 
-            qDebug() << " - fichier uploade = " + image->getObjectPath();
+            //qDebug() << " - fichier uploade = " + image->getObjectPath();
 
             //uploadOneImage(image->getObjectPath()  ,
             //               image->getTags()        ,
@@ -147,7 +147,7 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
 
             filesToUpload.removeFirst();
 
-            qDebug() << " - nombre fichiers restant = " << this->filesToUpload.size();
+            //qDebug() << " - nombre fichiers restant = " << this->filesToUpload.size();
 
             if(this->filesToUpload.size() > 0)
                 connect(this,SIGNAL(uploadDone(ImageShackResponse *)),
@@ -284,21 +284,21 @@ void ImageShackUploader::sendImage(ImageShackObject * imageToUpload ,
 */
 void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
 {
-    qDebug() << " -- ManageImageUploads";
-    qDebug() << " -  nombre fichiers restant = " << filesToUpload.size();
+    //qDebug() << " -- ManageImageUploads";
+    //qDebug() << " -  nombre fichiers restant = " << filesToUpload.size();
 
     if(this->filesToUpload.size() > 0 && this->uploadStarted)
     {
         //ImageShackObject * file = filesToUpload.takeFirst();
         ImageShackObject * file = (ImageShackObject *) filesToUpload.first();
 
-        qDebug() << " - Fichier a uploader = " << file->getObjectPath();
+        //qDebug() << " - Fichier a uploader = " << file->getObjectPath();
 
         uploadOneImage(file);
 
         filesToUpload.removeFirst();
 
-        qDebug() << " - Nombre fichiers restant = " << filesToUpload.size();
+        //qDebug() << " - Nombre fichiers restant = " << filesToUpload.size();
     }
 }
 
@@ -322,12 +322,12 @@ void ImageShackUploader::imageUploaded()
 	}
 	else
 	{
-		qDebug() << "Une image est uploade : \n " << usableResponse;
+		//qDebug() << "Une image est uploade : \n " << usableResponse;
 
 		emit uploadDone(new ImageShackResponse(this->fileBeingUploaded,usableResponse));
 		this->nbFilesUploaded ++;
 
-		qDebug() << filesToUpload.size();
+		//qDebug() << filesToUpload.size();
 
 		if(nbFilesUploaded == nbFilesToUploads)
 		{
@@ -439,7 +439,7 @@ void ImageShackUploader::manageUploadError(QNetworkReply::NetworkError errorCode
 **/
 void ImageShackUploader::manageUploadProgress(qint64 bytesReceived,qint64 bytesTotal)
 {
-    qDebug() << this->fileBeingUploaded->getObjectPath() << " Uploading " << bytesReceived << "/"<< bytesTotal;
+    //qDebug() << this->fileBeingUploaded->getObjectPath() << " Uploading " << bytesReceived << "/"<< bytesTotal;
 
     emit uploadProgress(this->fileBeingUploaded,bytesReceived,bytesTotal);
 }

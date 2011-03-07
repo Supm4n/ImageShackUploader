@@ -64,7 +64,7 @@ Window::Window()
 
 void Window::manageEndUpload()
 {
-    qDebug() << "End of uploads" ;
+    //qDebug() << "End of uploads" ;
 }
 /**
 *	Destructor
@@ -77,7 +77,7 @@ Window::~Window()
 void Window::manageResponse(bool response)
 {
     if(response)
-        qDebug() << "Good Password !!"  ;
+        //qDebug() << "Good Password !!"  ;
     else
-        qDebug() << "Wrong password";
+        //qDebug() << "Wrong password";
 }
