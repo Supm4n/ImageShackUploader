@@ -44,6 +44,7 @@ ImageShackUploader::ImageShackUploader(QString         developerKey ,
     this->authentificationUrl  = "http://www.imageshack.us/auth.php";
     this->nbFilesToUploads     = 0;
     this->nbFilesUploaded      = 0;
+	this->uploadAborted	   	   = false;
 }
 
 /**
@@ -93,10 +94,10 @@ void ImageShackUploader::checkUserPassword(QString	userName    ,
 **/
 void ImageShackUploader::manageAuthentificationResponse()
 {
-    //QNetworkReply * httpReply = qobject_cast<QNetworkReply*>(sender());
+    QNetworkReply * httpReply = qobject_cast<QNetworkReply*>(sender());
     QByteArray response;
 
-    response = networkReply->readAll();
+    response = httpReply->readAll();
 
     if(response == QByteArray("OK"))
         emit authentificationResponse(true);
@@ -215,8 +216,12 @@ void ImageShackUploader::sendImage(ImageShackObject * imageToUpload ,
 
 	if(!image.open(QIODevice::ReadOnly))
 	{
-		emit uploadError(ImageShackError::FailedOpeningTheFile);
-		this->abortUploads();
+		if(uploadAborted==false)
+		{
+			emit uploadError(ImageShackError::FailedOpeningTheFile);
+			this->abortUploads();
+		}
+
 		return;
 	}
 
@@ -256,15 +261,15 @@ void ImageShackUploader::sendImage(ImageShackObject * imageToUpload ,
 
     this->uploadStarted	   = true;
 
-    networkReply = manager->post(request, data);
+    this->networkReply = manager->post(request, data);
 
-	connect(networkReply, SIGNAL(finished())      ,
+	connect(this->networkReply, SIGNAL(finished())      ,
 			this        , SLOT  (imageUploaded()));
 
-	connect(networkReply, SIGNAL(error(QNetworkReply::NetworkError))       ,
+	connect(this->networkReply, SIGNAL(error(QNetworkReply::NetworkError))       ,
             this        , SLOT  (manageUploadError(QNetworkReply::NetworkError)));
 
-    connect(networkReply, SIGNAL(uploadProgress(qint64,qint64)),
+    connect(this->networkReply, SIGNAL(uploadProgress(qint64,qint64)),
             this	    , SLOT  (manageUploadProgress(qint64,qint64)));
 
     connect(manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
@@ -287,7 +292,7 @@ void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
     //qDebug() << " -- ManageImageUploads";
     //qDebug() << " -  nombre fichiers restant = " << filesToUpload.size();
 
-    if(this->filesToUpload.size() > 0 && this->uploadStarted)
+    if(this->filesToUpload.size() > 0 && this->uploadAborted)
     {
         //ImageShackObject * file = filesToUpload.takeFirst();
         ImageShackObject * file = (ImageShackObject *) filesToUpload.first();
@@ -311,28 +316,35 @@ void ImageShackUploader::imageUploaded()
 {
     QHash<QString, QString> usableResponse;
 
-    usableResponse = ImageShackResponse::makeResponseUsable(networkReply);
-
-	if(usableResponse.contains(QString("error")))
+	if(uploadStarted)
 	{
-		//qDebug() << "error resolution tag";
-		//this->uploadStarted	   = false;
-		emit uploadError(ImageShackError::UnKnownError);
-		this->abortUploads();
-	}
-	else
-	{
-		//qDebug() << "Une image est uploade : \n " << usableResponse;
+		usableResponse = ImageShackResponse::makeResponseUsable(this->networkReply);
 
-		emit uploadDone(new ImageShackResponse(this->fileBeingUploaded,usableResponse));
-		this->nbFilesUploaded ++;
-
-		//qDebug() << filesToUpload.size();
-
-		if(nbFilesUploaded == nbFilesToUploads)
+		if(usableResponse.contains(QString("error")))
 		{
-			this->uploadStarted	   = false;
-			emit endOfUploads();
+			//qDebug() << "error resolution tag";
+			//this->uploadStarted	   = false;
+
+			if(uploadAborted==false)
+			{
+				emit uploadError(ImageShackError::UnKnownError);
+				this->abortUploads();
+			}
+		}
+		else
+		{
+			//qDebug() << "Une image est uploade : \n " << usableResponse;
+
+			emit uploadDone(new ImageShackResponse(this->fileBeingUploaded,usableResponse));
+			this->nbFilesUploaded ++;
+
+			//qDebug() << filesToUpload.size();
+
+			if(nbFilesUploaded == nbFilesToUploads)
+			{
+				this->uploadStarted	   = false;
+				emit endOfUploads();
+			}
 		}
 	}
 
@@ -343,8 +355,9 @@ void ImageShackUploader::imageUploaded()
  */
 void ImageShackUploader::abortUploads()
 {
+	this->uploadAborted = true;
 	this->uploadStarted = false;
-	networkReply->abort();
+	this->networkReply->abort();
 }
 
 /**
@@ -404,8 +417,11 @@ QString ImageShackUploader::mimeType(QString imagePath)
 void ImageShackUploader::manageAuthentificationRequired(QNetworkReply  * reply,
                                                         QAuthenticator * authentificator)
 {
-    emit authentificationRequired(reply,authentificator);
-	this->abortUploads();
+	if(uploadAborted==false)
+	{
+		emit authentificationRequired(reply,authentificator);
+		this->abortUploads();
+	}
 }
 
 /**
@@ -415,8 +431,11 @@ void ImageShackUploader::manageAuthentificationRequired(QNetworkReply  * reply,
 void ImageShackUploader::manageProxyAuthentificationRequired(const QNetworkProxy & proxy,
                                                              QAuthenticator      * authenticator)
 {
-    emit proxyAuthentificationRequired(proxy,authenticator);
-	this->abortUploads();
+	if(uploadAborted==false)
+	{
+		emit proxyAuthentificationRequired(proxy,authenticator);
+		this->abortUploads();
+	}
 }
 
 /**
@@ -428,8 +447,11 @@ void ImageShackUploader::manageUploadError(QNetworkReply::NetworkError errorCode
 {
     //qDebug() << "Error : " << errorCode;
 
-	emit uploadError(ImageShackError::getErrorCode(errorCode));
-	this->abortUploads();
+	if(uploadAborted==false)
+	{
+		emit uploadError(ImageShackError::getErrorCode(errorCode));
+		this->abortUploads();
+	}
 }
 
 /**

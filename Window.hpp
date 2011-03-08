@@ -22,6 +22,7 @@
 #define  HEADER_WINDOW
 
 #include <QDebug>
+#include <QTimer>
 #include <QWidget>
 
 #include "ImageShackUploader.hpp"
@@ -68,6 +69,8 @@ class Window : public QObject
             void manageResponse(bool response);
 
             void manageEndUpload();
+
+			void oneUploadDone();
 };
 
 #endif

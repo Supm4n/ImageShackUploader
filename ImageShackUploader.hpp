@@ -231,6 +231,13 @@ class ImageShackUploader : public QObject
             **/
             bool	uploadStarted;
 
+			/**
+			 * @brief set to true when an error occured. 
+			 *
+			 * This is use to not emit multiple signals
+			 */
+            bool	uploadAborted;
+
             /**
 			*	QNetworkAccessManager	networkManager	the network manager	
 			*

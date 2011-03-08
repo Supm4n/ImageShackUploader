@@ -40,7 +40,7 @@ Window::Window()
     //listeImages << a;
 
     ImageShackObject * basket = new ImageShackObject("/home/christ/Images/Basket/basket.jpg","basket,fire,pub",true);
-    ImageShackObject * dunk   = new ImageShackObject("/home/christ/Images/Basket/dunk.jpg","dunk,nba,priv",false);
+    ImageShackObject * dunk   = new ImageShackObject("/home/christ/Images/Basket/test.jpg","dunk,nba,priv",false);
 
 	basket->setResizeOption("200x200");
 	dunk->setResizeOption("50x300");
@@ -51,15 +51,24 @@ Window::Window()
     uploader = new ImageShackUploader(QString("EFI0O4JZd1897eb3d86758fa0ee582a34385405e"));
    // uploader->anonymousUploadImages(listeImage);
     uploader->uploadImages(listeImages,"kwentakill","rousseau");
+
+//	QTimer::singleShot(500, this, SLOT(oneUploadDone()));
+
     //uploader->anonymousUploadImage(fichier,"basket");
 	//uploader->setRemoveInformationBar(false);	
     //uploader->userUploadImage(fichier,"kwentakill","rousseau","dunk");
     //uploader->userUploadImage(fichier,"kwentakill","rousea","dunk","150x150");
 
     //uploader->checkUserPassword("kwentakill","rousseau");
-
     connect(uploader,SIGNAL(authentificationResponse(bool)),this,SLOT(manageResponse(bool)));
+	connect(uploader,SIGNAL(uploadDone(ImageShackResponse *)),this,SLOT(oneUploadDone()));
     connect(uploader,SIGNAL(endOfUploads()),this,SLOT(manageEndUpload()));
+}
+
+void Window::oneUploadDone()
+{
+//	qDebug("Abortation");
+	uploader->abortUploads();
 }
 
 void Window::manageEndUpload()
@@ -76,8 +85,8 @@ Window::~Window()
 
 void Window::manageResponse(bool response)
 {
-    if(response)
+    //if(response)
         //qDebug() << "Good Password !!"  ;
-    else
+    //else
         //qDebug() << "Wrong password";
 }
