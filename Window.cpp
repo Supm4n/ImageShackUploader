@@ -28,6 +28,7 @@
 Window::Window()
 {
     QList<ImageShackObject *>  listeImages ;
+	QNetworkProxy * proxy = new QNetworkProxy(QNetworkProxy::HttpProxy,QString("proxy.enst-bretagne.fr"),8080);
 
     //ImageShackObject * howard = new ImageShackObject("/home/christ/Images/design/0pc.png","mc,notmac,pub",true);
     //ImageShackObject * dunk   = new ImageShackObject("/home/christ/Images/design/1biere.png","biere,pub",true);
@@ -45,10 +46,14 @@ Window::Window()
 	basket->setResizeOption("200x200");
 	dunk->setResizeOption("50x300");
 
-    listeImages << basket;
     listeImages << dunk;
+    listeImages << basket;
 
     uploader = new ImageShackUploader(QString("EFI0O4JZd1897eb3d86758fa0ee582a34385405e"));
+	//uploader->setProxy(proxy);
+
+	//uploader->checkUserPassword(QString("kwentakill"),QString("rousseau"));
+
    // uploader->anonymousUploadImages(listeImage);
     uploader->uploadImages(listeImages,"kwentakill","rousseau");
 
@@ -67,8 +72,8 @@ Window::Window()
 
 void Window::oneUploadDone()
 {
-//	qDebug("Abortation");
-	uploader->abortUploads();
+	//qDebug("Abortation");
+//	uploader->abortUploads();
 }
 
 void Window::manageEndUpload()
@@ -85,8 +90,8 @@ Window::~Window()
 
 void Window::manageResponse(bool response)
 {
-    //if(response)
-        //qDebug() << "Good Password !!"  ;
-    //else
-        //qDebug() << "Wrong password";
+    if(response)
+        qDebug() << "Good Password !!"  ;
+    else
+        qDebug() << "Wrong password";
 }

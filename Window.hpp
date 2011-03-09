@@ -22,6 +22,7 @@
 #define  HEADER_WINDOW
 
 #include <QDebug>
+#include <QNetworkProxy>
 #include <QTimer>
 #include <QWidget>
 

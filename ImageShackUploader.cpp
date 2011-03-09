@@ -8,7 +8,7 @@
 *	@author		Christ Azika-Eros <christ@azika-eros.org>
 *	@copyright	Quentin Rousseau (c) 2010 2009, Quentin Rousseau
 *	@license	Creative Commons GNU GPL
-*			http://creativecommons.org/licenses/GPL/2.0/
+	*			http://creativecommons.org/licenses/GPL/2.0/
 *	@link 		http://thumbnailme.sourceforge.net/
 *	@version	3.0
 *
@@ -35,7 +35,7 @@ ImageShackUploader::ImageShackUploader(QString         developerKey ,
                                        QNetworkProxy * proxy	    )
 {
     this->developerKey         = developerKey;
-    this->userName	       = userName;
+    this->userName	           = userName;
     this->userPassword         = userPassword;
     this->proxy				   = proxy;
     this->imageUploadUrl       = "http://www.imageshack.us/upload_api.php" ;
@@ -73,18 +73,17 @@ void ImageShackUploader::checkUserPassword(QString	userName    ,
 
     QNetworkRequest request(url);
     QNetworkAccessManager * manager = new QNetworkAccessManager;
-    QNetworkReply * reply ;
 
     // manage proxy
     if(this->proxy != NULL)
         manager->setProxy(*this->proxy);
 
-    reply = manager->get(request);
+    this->networkReply = manager->get(request);
 
-    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
+    connect(this->networkReply, SIGNAL(error(QNetworkReply::NetworkError)),
             this , SLOT(manageUploadError(QNetworkReply::NetworkError)));
 
-    connect(reply, SIGNAL(finished()), this, SLOT(manageAuthentificationResponse()));
+    connect(this->networkReply, SIGNAL(finished()), this, SLOT(manageAuthentificationResponse()));
 }
 
 /**
@@ -94,10 +93,11 @@ void ImageShackUploader::checkUserPassword(QString	userName    ,
 **/
 void ImageShackUploader::manageAuthentificationResponse()
 {
-    QNetworkReply * httpReply = qobject_cast<QNetworkReply*>(sender());
+    //QNetworkReply * httpReply = qobject_cast<QNetworkReply*>(sender());
     QByteArray response;
 
-    response = httpReply->readAll();
+   // response = httpReply->readAll();
+    response = networkReply->readAll();
 
     if(response == QByteArray("OK"))
         emit authentificationResponse(true);
@@ -119,10 +119,10 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
     if(this->uploadStarted == false) // if a previons mutli-upload is not finished
     {
 		if(userName != "")
-			this->userName		   = userName;
+			this->userName = userName;
 
 		if(userPassword != "")
-			this->userPassword     = userPassword;
+			this->userPassword = userPassword;
 
         this->filesToUpload    = images;
         this->nbFilesToUploads = images.size();
@@ -132,12 +132,12 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
         {
             this->uploadStarted = true;
 
-            //qDebug() << " - Nombre de fichiers a uploader = " << this->filesToUpload.size();
+            //qDebug() << " * Nombre de fichiers a uploader = " << this->filesToUpload.size();
 
             //ImageShackObject * image = (ImageShackObject *) filesToUpload.takeFirst(); // return and remove the first image
             ImageShackObject * image = (ImageShackObject *) filesToUpload.first(); // return and remove the first image
 
-            //qDebug() << " - fichier uploade = " + image->getObjectPath();
+            //qDebug() << " * Fichier allant etre uploade = " + image->getObjectPath();
 
             //uploadOneImage(image->getObjectPath()  ,
             //               image->getTags()        ,
@@ -148,7 +148,7 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
 
             filesToUpload.removeFirst();
 
-            //qDebug() << " - nombre fichiers restant = " << this->filesToUpload.size();
+            //qDebug() << " * Nombre de fichiers restant = " << this->filesToUpload.size();
 
             if(this->filesToUpload.size() > 0)
                 connect(this,SIGNAL(uploadDone(ImageShackResponse *)),
@@ -289,21 +289,21 @@ void ImageShackUploader::sendImage(ImageShackObject * imageToUpload ,
 */
 void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
 {
-    //qDebug() << " -- ManageImageUploads";
-    //qDebug() << " -  nombre fichiers restant = " << filesToUpload.size();
+    //qDebug() << " * ManageImageUploads";
+    //qDebug() << " * Nombre fichiers restant = " << filesToUpload.size();
 
-    if(this->filesToUpload.size() > 0 && this->uploadAborted)
+    if((this->filesToUpload.size() > 0) && (this->uploadAborted == false))
     {
         //ImageShackObject * file = filesToUpload.takeFirst();
         ImageShackObject * file = (ImageShackObject *) filesToUpload.first();
 
-        //qDebug() << " - Fichier a uploader = " << file->getObjectPath();
+        //qDebug() << " * Fichier sur le point de partir = " << file->getObjectPath();
 
         uploadOneImage(file);
 
         filesToUpload.removeFirst();
 
-        //qDebug() << " - Nombre fichiers restant = " << filesToUpload.size();
+        //qDebug() << " * Nombre de fichiers restant = " << filesToUpload.size();
     }
 }
 
@@ -320,25 +320,27 @@ void ImageShackUploader::imageUploaded()
 	{
 		usableResponse = ImageShackResponse::makeResponseUsable(this->networkReply);
 
+		//qDebug() << usableResponse;
+
 		if(usableResponse.contains(QString("error")))
 		{
-			//qDebug() << "error resolution tag";
+			//qDebug() << "* Error in response";
 			//this->uploadStarted	   = false;
 
 			if(uploadAborted==false)
 			{
-				emit uploadError(ImageShackError::UnKnownError);
+				emit uploadError(ImageShackError::getErrorCode(usableResponse));
 				this->abortUploads();
 			}
 		}
 		else
 		{
-			//qDebug() << "Une image est uploade : \n " << usableResponse;
+			//qDebug() << "* Image uploadé avec succès : \n " << usableResponse;
 
 			emit uploadDone(new ImageShackResponse(this->fileBeingUploaded,usableResponse));
 			this->nbFilesUploaded ++;
 
-			//qDebug() << filesToUpload.size();
+			//qDebug() << "* Nombre de fichiers restant " << filesToUpload.size();
 
 			if(nbFilesUploaded == nbFilesToUploads)
 			{
@@ -347,7 +349,6 @@ void ImageShackUploader::imageUploaded()
 			}
 		}
 	}
-
 }
 
 /**
@@ -463,7 +464,10 @@ void ImageShackUploader::manageUploadProgress(qint64 bytesReceived,qint64 bytesT
 {
     //qDebug() << this->fileBeingUploaded->getObjectPath() << " Uploading " << bytesReceived << "/"<< bytesTotal;
 
-    emit uploadProgress(this->fileBeingUploaded,bytesReceived,bytesTotal);
+	if(uploadAborted==false)
+	{
+		emit uploadProgress(this->fileBeingUploaded,bytesReceived,bytesTotal);
+	}
 }
 
 /**

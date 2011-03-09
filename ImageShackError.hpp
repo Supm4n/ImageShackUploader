@@ -53,7 +53,8 @@ class ImageShackError : public QObject
                              UnknownNetworkError         , UnknownProxyError,
                              UnknownContentError         , ProtocolFailure ,
                              ContentReSendError		     , UnKnownError,
-							 TemporaryNetworkFailureError, FailedOpeningTheFile};
+							 TemporaryNetworkFailureError, FailedOpeningTheFile,
+							 MaxSizeReached};
 
     public : // public method
 			/**
@@ -61,6 +62,15 @@ class ImageShackError : public QObject
 			*
 			**/
             static UploadError getErrorCode(QNetworkReply::NetworkError errorCode);
+
+			/**
+			 * @brief Return the error code corresponding to an ImageShack error
+			 *
+			 * @param usableResponse
+			 *
+			 * @return 
+			 */
+			static UploadError getErrorCode(QHash<QString, QString> usableResponse);
 
     //public  : // Setters and Getters
 };

@@ -58,3 +58,22 @@ ImageShackError::UploadError ImageShackError::getErrorCode(QNetworkReply::Networ
 	return code;
 }
 
+
+/**
+* @brief Return the error code corresponding to an ImageShack error
+*
+* @param usableResponse
+*
+* @return 
+*/
+ImageShackError::UploadError ImageShackError::getErrorCode(QHash<QString, QString> usableResponse)
+{
+	UploadError code = NoError;
+
+	if(usableResponse["error"].contains(QString("no more than 5 Mb")))
+		code = MaxSizeReached;
+
+	qDebug()  << "error code : " << code;
+	return code;
+}
+
