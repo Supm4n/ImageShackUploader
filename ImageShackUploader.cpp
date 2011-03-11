@@ -40,10 +40,10 @@ ImageShackUploader::ImageShackUploader(QString         developerKey ,
     this->proxy				   = proxy;
     this->imageUploadUrl       = "http://www.imageshack.us/upload_api.php" ;
 	this->removeInformationBar = true;
-    this->uploadStarted	       = false;
     this->authentificationUrl  = "http://www.imageshack.us/auth.php";
     this->nbFilesToUploads     = 0;
     this->nbFilesUploaded      = 0;
+    this->uploadStarted	       = false;
 	this->uploadAborted	   	   = false;
 }
 
@@ -73,6 +73,8 @@ void ImageShackUploader::checkUserPassword(QString	userName    ,
 
     QNetworkRequest request(url);
     QNetworkAccessManager * manager = new QNetworkAccessManager;
+
+	this->uploadAborted = false;
 
     // manage proxy
     if(this->proxy != NULL)
@@ -131,6 +133,7 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
         if(this->filesToUpload.size() > 0) // if there are images to upload
         {
             this->uploadStarted = true;
+			this->uploadAborted = false;
 
             //qDebug() << " * Nombre de fichiers a uploader = " << this->filesToUpload.size();
 
@@ -259,7 +262,7 @@ void ImageShackUploader::sendImage(ImageShackObject * imageToUpload ,
 
     this->fileBeingUploaded = imageToUpload;
 
-    this->uploadStarted	   = true;
+    //this->uploadStarted	   = true;
 
     this->networkReply = manager->post(request, data);
 
