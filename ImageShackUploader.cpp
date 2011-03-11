@@ -43,7 +43,7 @@ ImageShackUploader::ImageShackUploader(QString         developerKey ,
     this->authentificationUrl  = "http://www.imageshack.us/auth.php";
     this->nbFilesToUploads     = 0;
     this->nbFilesUploaded      = 0;
-    this->uploadStarted	       = false;
+    this->uploadsProcessing	       = false;
 	this->uploadAborted	   	   = false;
 }
 
@@ -118,7 +118,7 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
                                       QString                userName    ,
                                       QString 			     userPassword)
 {
-    if(this->uploadStarted == false) // if a previons mutli-upload is not finished
+    if(this->uploadsProcessing == false) // if a previons mutli-upload is not finished
     {
 		if(userName != "")
 			this->userName = userName;
@@ -132,7 +132,7 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
 
         if(this->filesToUpload.size() > 0) // if there are images to upload
         {
-            this->uploadStarted = true;
+            this->uploadsProcessing = true;
 			this->uploadAborted = false;
 
             //qDebug() << " * Nombre de fichiers a uploader = " << this->filesToUpload.size();
@@ -262,7 +262,7 @@ void ImageShackUploader::sendImage(ImageShackObject * imageToUpload ,
 
     this->fileBeingUploaded = imageToUpload;
 
-    //this->uploadStarted	   = true;
+    //this->uploadsProcessing	   = true;
 
     this->networkReply = manager->post(request, data);
 
@@ -319,7 +319,7 @@ void ImageShackUploader::imageUploaded()
 {
     QHash<QString, QString> usableResponse;
 
-	if(uploadStarted)
+	if(uploadsProcessing)
 	{
 		usableResponse = ImageShackResponse::makeResponseUsable(this->networkReply);
 
@@ -328,7 +328,7 @@ void ImageShackUploader::imageUploaded()
 		if(usableResponse.contains(QString("error")))
 		{
 			//qDebug() << "* Error in response";
-			//this->uploadStarted	   = false;
+			//this->uploadsProcessing	   = false;
 
 			if(uploadAborted==false)
 			{
@@ -347,7 +347,7 @@ void ImageShackUploader::imageUploaded()
 
 			if(nbFilesUploaded == nbFilesToUploads)
 			{
-				this->uploadStarted	   = false;
+				this->uploadsProcessing	   = false;
 				emit endOfUploads();
 			}
 		}
@@ -360,7 +360,7 @@ void ImageShackUploader::imageUploaded()
 void ImageShackUploader::abortUploads()
 {
 	this->uploadAborted = true;
-	this->uploadStarted = false;
+	this->uploadsProcessing = false;
 	this->networkReply->abort();
 }
 
@@ -471,6 +471,17 @@ void ImageShackUploader::manageUploadProgress(qint64 bytesReceived,qint64 bytesT
 	{
 		emit uploadProgress(this->fileBeingUploaded,bytesReceived,bytesTotal);
 	}
+}
+
+
+/**
+* @brief return true if uploads are in progress
+*
+* @return true/false in uploads are in progress 
+*/
+bool ImageShackUploader::uploadsInProgress()
+{
+	return uploadsProcessing;
 }
 
 /**

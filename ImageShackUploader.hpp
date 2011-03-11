@@ -78,7 +78,7 @@ class ImageShackUploader : public QObject
 			 * @see   signal uploadAlreadyStarted()
 			 * @see   signal authentificationResponse()
 			 * @see	  signal uploadError(ImageShackError::UploadError)
-			 * @see   signal uploadInProgress(ImageShackObject    ,
+			 * @see   signal uploadProgress(ImageShackObject    ,
 			 * 								  qint64 bytesreceived,
 			 * 								  qint64 bytesTotal   )
 			 * @see	  signal uploadDone(ImageShackResponse) 
@@ -224,12 +224,12 @@ class ImageShackUploader : public QObject
 			bool	removeInformationBar;
 
             /**
-            *	bool uploadInProgress	equals true when a file is being uploaded.
+            *	bool uploadsProcessing	equals true when a file is being uploaded.
             *							no upload can start in this case
             *
             *	@access	private
             **/
-            bool	uploadStarted;
+            bool	uploadsProcessing;
 
 			/**
 			 * @brief set to true when an error occured. 
@@ -386,6 +386,13 @@ class ImageShackUploader : public QObject
 			*	@access public	
 			*/
 			bool getRemoveInformationBar();
+
+			/**
+			 * @brief return true if uploads are in progress
+			 *
+			 * @return true/false in uploads are in progress 
+			 */
+			bool uploadsInProgress();
 
 			/**
 			*	the getter of the proxy
