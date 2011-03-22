@@ -41,12 +41,12 @@ Window::Window()
     //listeImages << a;
 
     ImageShackObject * basket = new ImageShackObject("/home/christ/Images/Basket/basket.jpg","basket,fire,pub",true);
-    ImageShackObject * dunk   = new ImageShackObject("/home/christ/Images/Basket/test.jpg","dunk,nba,priv",false);
+    //ImageShackObject * dunk   = new ImageShackObject("/home/christ/Images/Basket/test.jpg","dunk,nba,priv",false);
 
 	basket->setResizeOption("200x200");
-	dunk->setResizeOption("50x300");
+	//dunk->setResizeOption("50x300");
 
-    listeImages << dunk;
+    //listeImages << dunk;
     listeImages << basket;
 
     uploader = new ImageShackUploader(QString("EFI0O4JZd1897eb3d86758fa0ee582a34385405e"));
@@ -68,8 +68,13 @@ Window::Window()
     connect(uploader,SIGNAL(authentificationResponse(bool)),this,SLOT(manageResponse(bool)));
 	connect(uploader,SIGNAL(uploadDone(ImageShackResponse *)),this,SLOT(oneUploadDone()));
     connect(uploader,SIGNAL(endOfUploads()),this,SLOT(manageEndUpload()));
+	connect(uploader,SIGNAL(uploadError(ImageShackError::UploadError)),this,SLOT(handleErrors(ImageShackError::UploadError)));
 }
 
+void Window::handleErrors(ImageShackError::UploadError code)
+{
+	qDebug() << code;
+}
 void Window::oneUploadDone()
 {
 	//qDebug("Abortation");

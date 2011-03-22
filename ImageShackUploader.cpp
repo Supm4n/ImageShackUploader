@@ -43,8 +43,11 @@ ImageShackUploader::ImageShackUploader(QString         developerKey ,
     this->authentificationUrl  = "http://www.imageshack.us/auth.php";
     this->nbFilesToUploads     = 0;
     this->nbFilesUploaded      = 0;
-    this->uploadsProcessing	       = false;
+    this->uploadsProcessing	   = false;
 	this->uploadAborted	   	   = false;
+	this->timeoutTimer	       = new QTimer(this);
+
+	connect(timeoutTimer, SIGNAL(timeout()), this, SLOT(handleTimeOut()));
 }
 
 /**
@@ -147,6 +150,7 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
             //               image->getResizeOption(),
             //               userName, userPassword );
 
+			timeoutTimer->start(TIMEOUT);
             uploadOneImage(image);
 
             filesToUpload.removeFirst();
@@ -348,6 +352,7 @@ void ImageShackUploader::imageUploaded()
 			if(nbFilesUploaded == nbFilesToUploads)
 			{
 				this->uploadsProcessing	   = false;
+				timeoutTimer->stop();
 				emit endOfUploads();
 			}
 		}
@@ -359,6 +364,7 @@ void ImageShackUploader::imageUploaded()
  */
 void ImageShackUploader::abortUploads()
 {
+	timeoutTimer->stop();
 	this->uploadAborted = true;
 	this->uploadsProcessing = false;
 	this->networkReply->abort();
@@ -469,10 +475,22 @@ void ImageShackUploader::manageUploadProgress(qint64 bytesReceived,qint64 bytesT
 
 	if(uploadAborted==false)
 	{
+		timeoutTimer->start(TIMEOUT);
 		emit uploadProgress(this->fileBeingUploaded,bytesReceived,bytesTotal);
 	}
 }
 
+/**
+* @brief slot handling time out
+*/
+void ImageShackUploader::handleTimeOut()
+{
+	if(uploadAborted==false)
+	{
+		emit uploadError(ImageShackError::TimeoutError);	
+		this->abortUploads();
+	}
+}
 
 /**
 * @brief return true if uploads are in progress

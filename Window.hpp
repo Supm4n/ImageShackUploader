@@ -26,8 +26,9 @@
 #include <QTimer>
 #include <QWidget>
 
-#include "ImageShackUploader.hpp"
 #include "ImageShackObject.hpp"
+#include "ImageShackUploader.hpp"
+#include "ImageShackError.hpp"
 
 
 /**
@@ -72,6 +73,8 @@ class Window : public QObject
             void manageEndUpload();
 
 			void oneUploadDone();
+
+			void handleErrors(ImageShackError::UploadError);
 };
 
 #endif

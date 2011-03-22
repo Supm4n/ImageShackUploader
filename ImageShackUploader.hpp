@@ -34,12 +34,15 @@
 #include <QNetworkReply>
 #include <QString>
 #include <QStringList>
+#include <QTimer>
 #include <QUrl>
 #include <QWidget>
  
 #include "ImageShackError.hpp"
 #include "ImageShackObject.hpp"
 #include "ImageShackResponse.hpp"
+
+#define  TIMEOUT 5000
 
 /**
  * @brief ImageShackUploader
@@ -281,6 +284,11 @@ class ImageShackUploader : public QObject
 			**/
             QString userPassword;
 
+			/**
+			 * @brief timer to detect time out processes
+			 */
+			QTimer * timeoutTimer;
+
             int nbFilesToUploads;
 
             int nbFilesUploaded;
@@ -337,6 +345,12 @@ class ImageShackUploader : public QObject
             *	@access private
             **/
             void manageUploadProgress(qint64 bytesReceived,qint64 bytesTotal);
+
+
+			/**
+			 * @brief slot handling time out
+			 */
+			void handleTimeOut();
 
 	private : // private methods
 			
