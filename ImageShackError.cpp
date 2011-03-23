@@ -73,7 +73,7 @@ ImageShackError::UploadError ImageShackError::getErrorCode(QHash<QString, QStrin
 	if(usableResponse["error"].contains(QString("no more than 5 Mb")))
 		code = MaxSizeReached;
 
-	qDebug()  << "error code : " << code;
+	//qDebug()  << "error code : " << code;
 	return code;
 }
 

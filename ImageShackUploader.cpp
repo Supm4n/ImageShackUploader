@@ -150,7 +150,6 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
             //               image->getResizeOption(),
             //               userName, userPassword );
 
-			timeoutTimer->start(TIMEOUT);
             uploadOneImage(image);
 
             filesToUpload.removeFirst();
@@ -268,6 +267,8 @@ void ImageShackUploader::sendImage(ImageShackObject * imageToUpload ,
 
     //this->uploadsProcessing	   = true;
 
+	timeoutTimer->start(TIMEOUT);
+
     this->networkReply = manager->post(request, data);
 
 	connect(this->networkReply, SIGNAL(finished())      ,
@@ -305,6 +306,8 @@ void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
         ImageShackObject * file = (ImageShackObject *) filesToUpload.first();
 
         //qDebug() << " * Fichier sur le point de partir = " << file->getObjectPath();
+
+		timeoutTimer->stop();
 
         uploadOneImage(file);
 
@@ -456,11 +459,17 @@ void ImageShackUploader::manageProxyAuthentificationRequired(const QNetworkProxy
 void ImageShackUploader::manageUploadError(QNetworkReply::NetworkError errorCode)
 {
     //qDebug() << "Error : " << errorCode;
+	ImageShackError::UploadError error;
 
 	if(uploadAborted==false)
 	{
-		emit uploadError(ImageShackError::getErrorCode(errorCode));
-		this->abortUploads();
+		error = ImageShackError::getErrorCode(errorCode);
+
+		if(error != ImageShackError::NoError)
+		{
+			emit uploadError(error);
+			this->abortUploads();
+		}
 	}
 }
 
