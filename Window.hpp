@@ -72,9 +72,11 @@ class Window : public QObject
 
             void manageEndUpload();
 
-			void oneUploadDone();
+			void oneUploadDone(ImageShackResponse * reponse);
 
 			void handleErrors(ImageShackError::UploadError);
+
+			void handleProgressions(ImageShackObject * fic, qint64 rec, qint64 total);
 };
 
 #endif

@@ -313,7 +313,7 @@ void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
 
         filesToUpload.removeFirst();
 
-        //qDebug() << " * Nombre de fichiers restant = " << filesToUpload.size();
+       // qDebug() << " * Nombre de fichiers restant = " << filesToUpload.size();
     }
 }
 

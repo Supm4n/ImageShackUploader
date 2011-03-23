@@ -30,24 +30,24 @@ Window::Window()
     QList<ImageShackObject *>  listeImages ;
 	QNetworkProxy * proxy = new QNetworkProxy(QNetworkProxy::HttpProxy,QString("proxy.enst-bretagne.fr"),8080);
 
-    //ImageShackObject * howard = new ImageShackObject("/home/christ/Images/design/0pc.png","mc,notmac,pub",true);
-    //ImageShackObject * dunk   = new ImageShackObject("/home/christ/Images/design/1biere.png","biere,pub",true);
-    //ImageShackObject * fire   = new ImageShackObject("/home/christ/Images/design/3plus.png","plus,priv",false);
-    //ImageShackObject * a      = new ImageShackObject("/home/christ/Images/design/4cpu.png","cpu,priv",false);
+    ImageShackObject * howard = new ImageShackObject("/home/christ/Images/design/0pc.png","mc,notmac,pub",true);
+    ImageShackObject * dunk   = new ImageShackObject("/home/christ/Images/design/1biere.png","biere,pub",true);
+    ImageShackObject * fire   = new ImageShackObject("/home/christ/Images/design/3plus.png","plus,priv",false);
+    ImageShackObject * a      = new ImageShackObject("/home/christ/Images/design/4cpu.png","cpu,priv",false);
 
-    //listeImages << howard;
-    //listeImages << dunk;
-    //listeImages << fire;
-    //listeImages << a;
+    listeImages << howard;
+    listeImages << dunk;
+    listeImages << fire;
+    listeImages << a;
 
-    ImageShackObject * basket = new ImageShackObject("/home/christ/Images/Basket/basket.jpg","basket,fire,pub",true);
+    //ImageShackObject * basket = new ImageShackObject("/home/christ/Images/Basket/basket.jpg","basket,fire,pub",true);
     //ImageShackObject * dunk   = new ImageShackObject("/home/christ/Images/Basket/test.jpg","dunk,nba,priv",false);
 
-	basket->setResizeOption("200x200");
+	//basket->setResizeOption("200x200");
 	//dunk->setResizeOption("50x300");
 
     //listeImages << dunk;
-    listeImages << basket;
+   // listeImages << basket;
 
     uploader = new ImageShackUploader(QString("EFI0O4JZd1897eb3d86758fa0ee582a34385405e"));
 	//uploader->setProxy(proxy);
@@ -66,19 +66,25 @@ Window::Window()
 
     //uploader->checkUserPassword("kwentakill","rousseau");
     connect(uploader,SIGNAL(authentificationResponse(bool)),this,SLOT(manageResponse(bool)));
-	connect(uploader,SIGNAL(uploadDone(ImageShackResponse *)),this,SLOT(oneUploadDone()));
+	connect(uploader,SIGNAL(uploadDone(ImageShackResponse *)),this,SLOT(oneUploadDone(ImageShackResponse *)));
     connect(uploader,SIGNAL(endOfUploads()),this,SLOT(manageEndUpload()));
 	connect(uploader,SIGNAL(uploadError(ImageShackError::UploadError)),this,SLOT(handleErrors(ImageShackError::UploadError)));
+	connect(uploader,SIGNAL(uploadProgress(ImageShackObject *,qint64,qint64)),this,SLOT(handleProgressions(ImageShackObject *,qint64,qint64)));
 }
 
 void Window::handleErrors(ImageShackError::UploadError code)
 {
-	qDebug() << code;
+	qDebug() << "Window.cpp : Error n° " << code;
 }
-void Window::oneUploadDone()
+void Window::oneUploadDone(ImageShackResponse * response)
 {
-	//qDebug("Abortation");
+	qDebug() << "Reponse=" << response->getImageShackResponse();
 //	uploader->abortUploads();
+}
+
+void Window::handleProgressions(ImageShackObject * fic, qint64 rec, qint64 total)
+{
+    qDebug() << fic->getObjectPath() << " Uploading " << rec << "/"<< total;
 }
 
 void Window::manageEndUpload()
