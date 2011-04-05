@@ -160,8 +160,6 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
             filesToUpload.removeFirst();
 
             //qDebug() << " * Nombre de fichiers restant = " << this->filesToUpload.size();
-
-            //if(this->filesToUpload.size() > 0)
         }
     }
     else // multiupload already started. The method is called as a slot
@@ -348,20 +346,24 @@ void ImageShackUploader::imageUploaded()
 				if(error != ImageShackError::NoError)
 				{
 					emit uploadError(error);
-					this->abortUploads();
 				}
+					this->abortUploads();
 			}
 		}
 		else
 		{
 			//qDebug() << "* Image uploadé avec succès : \n " << usableResponse;
 
-			emit uploadDone(new ImageShackResponse(this->fileBeingUploaded,usableResponse));
-			this->nbFilesUploaded ++;
+
+			if(uploadAborted==false)
+			{
+				emit uploadDone(new ImageShackResponse(this->fileBeingUploaded,usableResponse));
+				this->nbFilesUploaded ++;
+			}
 
 			//qDebug() << "* Nombre de fichiers restant " << filesToUpload.size();
 
-			if(nbFilesUploaded == nbFilesToUploads)
+			if(nbFilesUploaded == nbFilesToUploads && uploadAborted == false)
 			{
 				this->uploadsProcessing	   = false;
 				timeoutTimer->stop();
