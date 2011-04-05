@@ -55,11 +55,11 @@ Window::Window()
    // listeImages << basket;
 
     uploader = new ImageShackUploader(QString("EFI0O4JZd1897eb3d86758fa0ee582a34385405e"));
-	//uploader->setProxy(proxy);
+	uploader->setProxy(proxy);
 
 	//uploader->checkUserPassword(QString("kwentakill"),QString("rousseau"));
 
-   // uploader->anonymousUploadImages(listeImage);
+   //uploader->anonymousUploadImages(listeImage);
 	qDebug() << "Window.cpp : Nombre de fichiers =" << listeImages.size();
     uploader->uploadImages(listeImages,"kwentakill","rousseau");
 

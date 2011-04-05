@@ -298,15 +298,15 @@ void ImageShackUploader::sendImage(ImageShackObject * imageToUpload ,
 */
 void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
 {
-    qDebug() << " * ManageImageUploads";
-    qDebug() << " * Nombre fichiers restant = " << filesToUpload.size();
+    //qDebug() << " * ManageImageUploads";
+    //qDebug() << " * Nombre fichiers restant = " << filesToUpload.size();
 
     if((this->filesToUpload.size() > 0) && (this->uploadAborted == false))
     {
         //ImageShackObject * file = filesToUpload.takeFirst();
         ImageShackObject * file = (ImageShackObject *) filesToUpload.first();
 
-        qDebug() << " * Fichier sur le point de partir = " << file->getObjectPath();
+        //qDebug() << " * Fichier sur le point de partir = " << file->getObjectPath();
 
 		timeoutTimer->stop();
 
