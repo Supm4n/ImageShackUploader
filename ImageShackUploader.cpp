@@ -48,6 +48,8 @@ ImageShackUploader::ImageShackUploader(QString         developerKey ,
 	this->timeoutTimer	       = new QTimer(this);
 
 	connect(timeoutTimer, SIGNAL(timeout()), this, SLOT(handleTimeOut()));
+
+    connect(this,SIGNAL(uploadDone(ImageShackResponse *)),this,SLOT(manageMultiUploads(ImageShackResponse *)));
 }
 
 /**
@@ -104,10 +106,13 @@ void ImageShackUploader::manageAuthentificationResponse()
    // response = httpReply->readAll();
     response = networkReply->readAll();
 
-    if(response == QByteArray("OK"))
-        emit authentificationResponse(true);
-    else
-        emit authentificationResponse(false);
+	if(uploadAborted==false)
+	{
+		if(response == QByteArray("OK"))
+			emit authentificationResponse(true);
+		else
+			emit authentificationResponse(false);
+	}
 }
 
 /**
@@ -156,9 +161,7 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
 
             //qDebug() << " * Nombre de fichiers restant = " << this->filesToUpload.size();
 
-            if(this->filesToUpload.size() > 0)
-                connect(this,SIGNAL(uploadDone(ImageShackResponse *)),
-                        this,SLOT(manageMultiUploads(ImageShackResponse *)));
+            //if(this->filesToUpload.size() > 0)
         }
     }
     else // multiupload already started. The method is called as a slot
@@ -297,15 +300,15 @@ void ImageShackUploader::sendImage(ImageShackObject * imageToUpload ,
 */
 void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
 {
-    //qDebug() << " * ManageImageUploads";
-    //qDebug() << " * Nombre fichiers restant = " << filesToUpload.size();
+    qDebug() << " * ManageImageUploads";
+    qDebug() << " * Nombre fichiers restant = " << filesToUpload.size();
 
     if((this->filesToUpload.size() > 0) && (this->uploadAborted == false))
     {
         //ImageShackObject * file = filesToUpload.takeFirst();
         ImageShackObject * file = (ImageShackObject *) filesToUpload.first();
 
-        //qDebug() << " * Fichier sur le point de partir = " << file->getObjectPath();
+        qDebug() << " * Fichier sur le point de partir = " << file->getObjectPath();
 
 		timeoutTimer->stop();
 
@@ -325,6 +328,7 @@ void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
 void ImageShackUploader::imageUploaded()
 {
     QHash<QString, QString> usableResponse;
+	ImageShackError::UploadError error;
 
 	if(uploadsProcessing)
 	{
@@ -339,8 +343,13 @@ void ImageShackUploader::imageUploaded()
 
 			if(uploadAborted==false)
 			{
-				emit uploadError(ImageShackError::getErrorCode(usableResponse));
-				this->abortUploads();
+				error = ImageShackError::getErrorCode(usableResponse);
+
+				if(error != ImageShackError::NoError)
+				{
+					emit uploadError(error);
+					this->abortUploads();
+				}
 			}
 		}
 		else

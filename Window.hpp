@@ -62,6 +62,12 @@ class Window : public QObject
 			**/
             ImageShackUploader * uploader;
 
+			QList<ImageShackObject *>  listeImages ;
+
+			QList<ImageShackObject *>  listeImages2 ;
+
+			bool secondUpload;
+
     private slots :
 
             /**

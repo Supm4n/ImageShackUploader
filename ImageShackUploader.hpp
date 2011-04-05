@@ -42,7 +42,7 @@
 #include "ImageShackObject.hpp"
 #include "ImageShackResponse.hpp"
 
-#define  TIMEOUT 5000
+#define  TIMEOUT 10000
 
 /**
  * @brief ImageShackUploader

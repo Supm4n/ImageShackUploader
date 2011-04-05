@@ -47,6 +47,8 @@ ImageShackResponse::~ImageShackResponse()
 **/
 QHash<QString, QString> ImageShackResponse::makeResponseUsable(QByteArray response)
 {
+	qDebug() << response;
+
     QHash<QString, QString> hashResponse;
     QHash<QString, QStringList> rootAndSubTags;
     QStringList resolutions, uploader, links;
