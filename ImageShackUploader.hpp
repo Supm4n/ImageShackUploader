@@ -63,8 +63,6 @@ class ImageShackUploader : public QObject
 			 * @param proxy			the proxy settings to use (optional) 
 			 */
             ImageShackUploader(QString         developerKey =  ""   ,
-                               QString         userName     =  ""   , 
-                               QString         userPassword =  ""   ,
                                QNetworkProxy * proxy		= NULL );
 
 			/**
@@ -270,18 +268,17 @@ class ImageShackUploader : public QObject
 			QString developerKey;	
 
 			/**
-			*	QString	userName	the user name. Only required to upload
+            *	QString	lastUserName	the user name. Only required to upload
 			*						to a specific account (userUploadImage)
 			*	@access	private
 			**/
-			QString userName;
-		
-			/**
-			*	QString	userPassword	the user password. Only required to 
-			*							upload to a specific account 
-			*							(userUploadImage)
-			*	@access	private
-			**/
+            QString userName;
+
+            /**
+            *	QString	userPassword	the user name. Only required to upload
+            *						to a specific account (userUploadImage)
+            *	@access	private
+            **/
             QString userPassword;
 
 			/**
@@ -365,7 +362,9 @@ class ImageShackUploader : public QObject
             *	@param	QString password	    the user password
             *	@access	private
             */
-            void uploadOneImage(ImageShackObject *   image);
+            void uploadOneImage(ImageShackObject *   image,
+                                QString userName     = "" ,
+                                QString userPassword = "");
 
             /**
 			*	Upload an image. This method is called by 
@@ -432,21 +431,13 @@ class ImageShackUploader : public QObject
 			*/
 			QString getImageUploadUrl();
 
-			/**
-			*	the getter of userName 
-			*		
-			*	@return userName
-			*	@access public	
-			*/
-			QString getUserName();
-
-			/**
-			*	the getter of userPassword 
-			*		
-			*	@return userPassword
-			*	@access public	
-			*/
-			QString getUserPassword();
+            /**
+            *	the getter of userName
+            *
+            *	@return developerKey
+            *	@access public
+            */
+            QString getLastUserName();
 
 			/**
 			*	the setter of developerKey
@@ -484,21 +475,6 @@ class ImageShackUploader : public QObject
 			*/
 			void setRemoveInformationBar(bool removeInformationBar);
 
-			/**
-			*	the setter of userName
-			*		
-			*	@param	userName	the user name
-			*	@access	public	
-			*/
-			void setUsername(QString userName);
-
-			/**
-			*	the setter of userPassword 
-			*		
-			*	@param	userPassword	the user password
-			*	@access	public	
-			*/
-			void setUserPassword(QString userPassword);
 };
 
 #endif // HEADER_IMAGESHACKUPLOADER

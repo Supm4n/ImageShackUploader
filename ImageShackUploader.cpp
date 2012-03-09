@@ -30,13 +30,11 @@
 *	QNetworkProxy * prosy	 	the proxy
 **/
 ImageShackUploader::ImageShackUploader(QString         developerKey ,
-                                       QString         userName		,
-                                       QString 		   userPassword ,
                                        QNetworkProxy * proxy	    )
 {
     this->developerKey         = developerKey;
-    this->userName	           = userName;
-    this->userPassword         = userPassword;
+    this->userName	       = "";
+    this->userPassword	       = "";
     this->proxy				   = proxy;
     this->imageUploadUrl       = "http://www.imageshack.us/upload_api.php" ;
 	this->removeInformationBar = true;
@@ -74,7 +72,7 @@ ImageShackUploader::~ImageShackUploader(void)
 void ImageShackUploader::checkUserPassword(QString	userName    ,
                                            QString  userPassword)
 {
-    QUrl url = QUrl(authentificationUrl + "?username=" + userName + "&password=" + userPassword);
+    QUrl url = QUrl(authentificationUrl + "?username=" + userName + "&password=" + userPassword + "&nocookie=1&format=xml");
 
     QNetworkRequest request(url);
     QNetworkAccessManager * manager = new QNetworkAccessManager;
@@ -100,18 +98,39 @@ void ImageShackUploader::checkUserPassword(QString	userName    ,
 **/
 void ImageShackUploader::manageAuthentificationResponse()
 {
-    //QNetworkReply * httpReply = qobject_cast<QNetworkReply*>(sender());
-    QByteArray response;
+    QByteArray httpResponse = networkReply->readAll();
+    QDomDocument xmlResponse;
+    xmlResponse.setContent(httpResponse);
 
-   // response = httpReply->readAll();
-    response = networkReply->readAll();
+    qDebug() << httpResponse;
 
 	if(uploadAborted==false)
 	{
-		if(response == QByteArray("OK"))
-			emit authentificationResponse(true);
-		else
-			emit authentificationResponse(false);
+        QDomElement rootTag = xmlResponse.documentElement();
+        if(rootTag.isNull())
+        {
+            emit authentificationResponse(false);
+            return;
+        }
+
+        QDomElement errorTag = rootTag.firstChildElement("error");
+        if(!errorTag.isNull())
+        {
+            emit authentificationResponse(false);
+            return;
+        }
+
+        QDomElement userNameTag = rootTag.firstChildElement("username");
+        if(userNameTag.isNull())
+        {
+            emit authentificationResponse(false);
+            return;
+        }
+        else
+        {
+            this->userName = userNameTag.text();
+            emit authentificationResponse(true);
+        }
 	}
 }
 
@@ -128,12 +147,6 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
 {
     if(this->uploadsProcessing == false) // if a previons mutli-upload is not finished
     {
-		if(userName != "")
-			this->userName = userName;
-
-		if(userPassword != "")
-			this->userPassword = userPassword;
-
         this->filesToUpload    = images;
         this->nbFilesToUploads = images.size();
         this->nbFilesUploaded  = 0;
@@ -142,6 +155,8 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
         {
             this->uploadsProcessing = true;
 			this->uploadAborted = false;
+            this->userName = userName;
+            this->userPassword = userPassword;
 
             //qDebug() << " * Nombre de fichiers a uploader = " << this->filesToUpload.size();
 
@@ -155,7 +170,7 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
             //               image->getResizeOption(),
             //               userName, userPassword );
 
-            uploadOneImage(image);
+            uploadOneImage(image, userName, userPassword);
 
             filesToUpload.removeFirst();
 
@@ -177,7 +192,7 @@ void ImageShackUploader::uploadImages(QList<ImageShackObject *> images   ,
 *	@param	QString password	    the user password
 *	@access	private
 */
-void ImageShackUploader::uploadOneImage(ImageShackObject *  image)
+void ImageShackUploader::uploadOneImage(ImageShackObject *  image, QString userName, QString userPassword)
 {
     QHash<QString, QString> headers;
 
@@ -190,10 +205,10 @@ void ImageShackUploader::uploadOneImage(ImageShackObject *  image)
     headers["key"]        = this->developerKey;
     headers["xml"]	      = QString("yes");
 
-    if(this->userName != "" )
+    if(userName != "" )
     {
-        headers["a_username"] = this->userName;
-        headers["a_password"] = this->userPassword;
+        headers["a_username"] = userName;
+        headers["a_password"] = userPassword;
     }
 
     sendImage(image,headers);
@@ -310,7 +325,7 @@ void ImageShackUploader::manageMultiUploads(ImageShackResponse * uploadResponse)
 
 		timeoutTimer->stop();
 
-        uploadOneImage(file);
+        uploadOneImage(file, this->userName, this->userPassword);
 
         filesToUpload.removeFirst();
 
@@ -583,25 +598,14 @@ QString ImageShackUploader::getImageUploadUrl()
 }
 
 /**
-*	the getter of userName 
-*		
-*	@return userName
-*	@access public	
+*	the getter of userName
+*
+*	@return developerKey
+*	@access public
 */
-QString ImageShackUploader::getUserName()
+QString ImageShackUploader::getLastUserName()
 {
-	return this->userName;
-}
-
-/**
-*	the getter of userPassword 
-*		
-*	@return userPassword
-*	@access public	
-*/
-QString ImageShackUploader::getUserPassword()
-{
-	return this->userPassword;
+    return this->userName;
 }
 
 /**
@@ -650,26 +654,4 @@ void ImageShackUploader::setProxy(QNetworkProxy * proxy)
 void ImageShackUploader::setRemoveInformationBar(bool removeInformationBar)
 {
 	this->removeInformationBar = removeInformationBar;
-}
-
-/**
-*	the setter of userName
-*		
-*	@param	   name					the user name
-*	@access	   public	
-*/
-void ImageShackUploader::setUsername(QString name)
-{
-	this->userName = name;
-}
-
-/**
-*	the setter of userPassword 
-*		
-*	@param	   password				the user password
-*	@access	   public	
-*/
-void ImageShackUploader::setUserPassword(QString password)
-{
-	this->userPassword = password;
 }

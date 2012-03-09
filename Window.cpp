@@ -31,17 +31,17 @@ Window::Window()
     //QList<ImageShackObject *>  listeImages ;
 	QNetworkProxy * proxy = new QNetworkProxy(QNetworkProxy::HttpProxy,QString("proxy.rennes.enst-bretagne.fr"),3128);
 
-    ImageShackObject * pc = new ImageShackObject("/home/christ/Images/design/0pc.png","mc,notmac,pub",true);
-    ImageShackObject * biere   = new ImageShackObject("/home/christ/Images/design/1biere.png","biere,pub",true);
-    ImageShackObject * plus  = new ImageShackObject("/home/christ/Images/design/3plus.png","plus,priv",false);
-    ImageShackObject * cpu      = new ImageShackObject("/home/christ/Images/design/4cpu.png","cpu,priv",false);
+    ImageShackObject * pc = new ImageShackObject("/Users/supm4n/Documents/Projects/ImageShackUploader/Argentina.gif","mc,notmac,pub",true);
+    ImageShackObject * biere   = new ImageShackObject("/Users/supm4n/Documents/Projects/ImageShackUploader/Australia.gif","biere,pub",true);
+    ImageShackObject * plus  = new ImageShackObject("/Users/supm4n/Documents/Projects/ImageShackUploader/Austria.gif","plus,priv",false);
+    //ImageShackObject * cpu      = new ImageShackObject("/Users/supm4n/Documents/Projects/ImageShackUploader/","cpu,priv",false);
 
     listeImages << pc;
-    listeImages << pc;
-    listeImages << pc;
-    listeImages2 << biere;
-    listeImages2 << plus;
-    listeImages2 << cpu;
+    listeImages << biere;
+    listeImages << plus;
+    //listeImages2 << biere;
+    //listeImages2 << plus;
+    //listeImages2 << cpu;
     //listeImages << fire;
     //listeImages << a;
 
@@ -55,13 +55,13 @@ Window::Window()
    // listeImages << basket;
 
     uploader = new ImageShackUploader(QString("EFI0O4JZd1897eb3d86758fa0ee582a34385405e"));
-	uploader->setProxy(proxy);
+    //uploader->setProxy(proxy);
 
 	//uploader->checkUserPassword(QString("kwentakill"),QString("rousseau"));
 
    //uploader->anonymousUploadImages(listeImage);
 	qDebug() << "Window.cpp : Nombre de fichiers =" << listeImages.size();
-    uploader->uploadImages(listeImages,"kwentakill","rousseau");
+    //uploader->uploadImages(listeImages,"kwentakill","rousseau");
 
 	//QTimer::singleShot(500, this, SLOT(oneUploadDone()));
 
@@ -70,7 +70,7 @@ Window::Window()
     //uploader->userUploadImage(fichier,"kwentakill","rousseau","dunk");
     //uploader->userUploadImage(fichier,"kwentakill","rousea","dunk","150x150");
 
-    //uploader->checkUserPassword("kwentakill","rousseau");
+    uploader->checkUserPassword("kwent_78@hotmail.fr","rousseau");
     connect(uploader,SIGNAL(authentificationResponse(bool)),this,SLOT(manageResponse(bool)));
 	connect(uploader,SIGNAL(uploadDone(ImageShackResponse *)),this,SLOT(oneUploadDone(ImageShackResponse *)));
     connect(uploader,SIGNAL(endOfUploads()),this,SLOT(manageEndUpload()));
@@ -86,8 +86,8 @@ void Window::handleErrors(ImageShackError::UploadError code)
 }
 void Window::oneUploadDone(ImageShackResponse * response)
 {
-	//qDebug() << "Window.cpp : Reponse received " << response->getImageShackResponse();
-	qDebug() << "Window.cpp : Reponse received " ;
+    //qDebug() << "Window.cpp : Reponse received " << response->getImageShackResponse();
+    //qDebug() << "Window.cpp : Reponse received " ;
 	qDebug() << "" ;
 //	uploader->abortUploads();
 }
@@ -104,7 +104,7 @@ void Window::manageEndUpload()
 	{
 		this->secondUpload = true;
 		qDebug() << "Window.cpp : End of uploads____________________________________________";
-		uploader->uploadImages(listeImages2,"kwentakill","rousseau");
+        //uploader->uploadImages(listeImages2,"kwentakill","rousseau");
 	}
 }
 /**
@@ -118,7 +118,7 @@ Window::~Window()
 void Window::manageResponse(bool response)
 {
     if(response)
-        qDebug() << "Good Password !!"  ;
+        qDebug() << this->uploader->getLastUserName()  ;
     else
         qDebug() << "Wrong password";
 }
